@@ -1,6 +1,10 @@
-package net.slc.jgroph.api.infrastructure;
+package net.slc.jgroph.api.adapters;
 
 import com.github.javafaker.Faker;
+import net.slc.jgroph.api.adapters.Launcher;
+import net.slc.jgroph.api.adapters.LauncherDependenciesFactory;
+import net.slc.jgroph.api.infrastructure.Router;
+import net.slc.jgroph.api.infrastructure.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.junit.Test;

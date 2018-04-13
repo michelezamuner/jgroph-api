@@ -28,7 +28,7 @@
         <dependency>
             <groupId>com.github.michelezamuner</groupId>
             <artifactId>jgroph-container</artifactId>
-            <version>0.0.1</version>
+            <version>0.0.2</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>
@@ -97,7 +97,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>net.slc.jgroph.api.infrastructure.Launcher</mainClass>
+                            <mainClass>net.slc.jgroph.api.adapters.Launcher</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -123,7 +123,7 @@
                 <version>1.6.0</version>
                 <executions>
                     <execution>
-                        <id>start-server</id>
+                        <id>start-client</id>
                         <phase>pre-integration-test</phase>
                         <goals>
                             <goal>exec</goal>

@@ -5,27 +5,27 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 /**
  * This wrapper is needed to be able to unit test the Launcher, since some methods of the Jetty Server are final.
  */
-class Server
+public class Server
 {
     private final org.eclipse.jetty.server.Server server;
 
-    Server(final org.eclipse.jetty.server.Server server)
+    public Server(final org.eclipse.jetty.server.Server server)
     {
         this.server = server;
     }
 
-    void setHandler(final ServletContextHandler handler)
+    public void setHandler(final ServletContextHandler handler)
     {
         server.setHandler(handler);
     }
 
-    void start()
+    public void start()
             throws Exception
     {
         server.start();
     }
 
-    void join()
+    public void join()
             throws InterruptedException
     {
         server.join();
