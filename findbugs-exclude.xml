@@ -13,7 +13,6 @@
     <!-- TODO: Deal with servlet passivation in the future -->
     <Match>
         <Class name="net.slc.jgroph.api.infrastructure.Router" />
-        <Field name="container" />
         <Bug pattern="SE_BAD_FIELD" />
     </Match>
 </FindBugsFilter>

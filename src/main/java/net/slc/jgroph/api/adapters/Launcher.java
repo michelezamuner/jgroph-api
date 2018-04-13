@@ -1,5 +1,9 @@
-package net.slc.jgroph.api.infrastructure;
+package net.slc.jgroph.api.adapters;
 
+import net.slc.jgroph.api.infrastructure.Router;
+import net.slc.jgroph.api.infrastructure.Routes;
+import net.slc.jgroph.api.infrastructure.Server;
+import net.slc.jgroph.infrastructure.container.Container;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 
@@ -29,7 +33,8 @@ public class Launcher
     {
         final Server server = factory.createServer(new InetSocketAddress(host, port));
         final ServletContextHandler handler = factory.createHandler(ServletContextHandler.SESSIONS);
-        final ServletHolder holder = factory.createHolder(new Router());
+        final Router router = new Router(new Container(), new Routes(BookmarksController.class));
+        final ServletHolder holder = factory.createHolder(router);
 
         handler.setContextPath("/");
         server.setHandler(handler);

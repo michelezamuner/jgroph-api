@@ -26,7 +26,7 @@ public class ITGetAllBookmarks
     {
         tester.beginAt("/bookmarks/");
         tester.assertResponseCode(Response.SC_OK);
-        tester.assertHeaderEquals("Content-Type", "net/slc/jgroph/api/application/json");
+        tester.assertHeaderEquals("Content-Type", "application/json");
 
         final String expected = "[\n  {\n    \"id\": 1,\n    \"title\": \"Title 1\"\n  },\n"
                 + "  {\n    \"id\": 2,\n    \"title\": \"Title 2\"\n  }\n]";

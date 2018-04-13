@@ -1,6 +1,5 @@
 package net.slc.jgroph.api.infrastructure;
 
-import net.slc.jgroph.api.adapters.BookmarksController;
 import net.slc.jgroph.infrastructure.container.Container;
 
 import javax.annotation.Nullable;
@@ -10,6 +9,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 @WebServlet(name = "router", urlPatterns = {"/"}, loadOnStartup = 1)
 public class Router extends HttpServlet
@@ -18,15 +19,17 @@ public class Router extends HttpServlet
     private static final long serialVersionUID = 0x000_002L;
 
     private final Container container;
+    private final Routes routes;
 
     public Router()
     {
-        this(null);
+        this(null, null);
     }
 
-    Router(@Nullable final Container container)
+    public Router(@Nullable final Container container, @Nullable final Routes routes)
     {
         this.container = container == null ? new Container() : container;
+        this.routes = routes == null ? new Routes() : routes;
     }
 
     @Override
@@ -36,12 +39,23 @@ public class Router extends HttpServlet
         final Request request = container.make(Request.class, servletRequest);
         final Response response = container.make(Response.class, servletResponse);
 
-        if ("/bookmarks/".equals(request.getPath())) {
-            BookmarksController controller = container.make(BookmarksController.class);
-            controller.index(request, response);
-            return;
+        try {
+            final Route route = routes.get(request);
+            executeAction(route, request, response);
+        } catch (RouteNotFoundException e) {
+            throw new ServletException("Only /bookmarks/ is currently supported.", e);
         }
+    }
 
-        throw new UnsupportedOperationException("Only /bookmarks/ is currently supported.");
+    private void executeAction(final Route route, final Request request, final Response response)
+            throws ServletException
+    {
+        final Object controller = container.make(route.getController());
+        try {
+            final Method action = controller.getClass().getMethod(route.getAction(), Request.class, Response.class);
+            action.invoke(controller, request, response);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            throw new ServletException("Invalid action for controller.", e);
+        }
     }
 }
