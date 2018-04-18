@@ -28,7 +28,7 @@
         <dependency>
             <groupId>com.github.michelezamuner</groupId>
             <artifactId>jgroph-container</artifactId>
-            <version>0.0.2</version>
+            <version>master-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.eclipse.jetty</groupId>

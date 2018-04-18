@@ -22,7 +22,7 @@ public class BookmarksControllerTest
     @Mock private Request request;
     @Mock private Response response;
     @Mock private Container container;
-    @Mock private ApiBookmarksPresenter presenter;
+    @Mock private BookmarksPresenter presenter;
     @Mock private BookmarksRepository repository;
     @Mock private GetAllBookmarks getAllBookmarks;
     @InjectMocks private BookmarksController controller;

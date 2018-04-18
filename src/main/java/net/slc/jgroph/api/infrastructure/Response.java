@@ -14,18 +14,19 @@ public class Response
         this.response = response;
     }
 
-    void setJsonContentType()
+    public void setJsonContentType()
     {
         response.setHeader("Content-Type", "application/json");
     }
 
-    void write(final String content)
+    public void write(final String content)
             throws ResponseException
     {
         try {
             response.getWriter().print(content);
         } catch (IOException e) {
-            throw new ResponseException(e.getMessage(), e);
+            final String message = e.getMessage() == null ? "Error writing the response" : e.getMessage();
+            throw new ResponseException(message, e);
         }
     }
 }
