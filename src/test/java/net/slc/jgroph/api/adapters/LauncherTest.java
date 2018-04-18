@@ -1,12 +1,12 @@
 package net.slc.jgroph.api.adapters;
 
 import com.github.javafaker.Faker;
-import net.slc.jgroph.api.adapters.Launcher;
-import net.slc.jgroph.api.adapters.LauncherDependenciesFactory;
 import net.slc.jgroph.api.infrastructure.Router;
 import net.slc.jgroph.api.infrastructure.Server;
+import net.slc.jgroph.infrastructure.container.Container;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -22,24 +22,33 @@ import static org.mockito.Mockito.*;
 public class LauncherTest
 {
     private final Faker faker = new Faker();
-    @Mock private LauncherDependenciesFactory factory;
+    @Mock private Container container;
+    @Mock private Provider provider;
     @Mock private Server server;
     @Mock private ServletContextHandler handler;
+    @Mock private Router router;
     @Mock private ServletHolder holder;
+    private String host;
+    private int port;
     @InjectMocks private Launcher launcher;
+
+    @Before
+    public void setUp()
+    {
+        host = faker.internet().ipV4Address();
+        port = faker.number().numberBetween(1025, 65535);
+        final InetSocketAddress address = new InetSocketAddress(host, port);
+
+        when(container.make(Server.class, address)).thenReturn(server);
+        when(container.make(ServletContextHandler.class, ServletContextHandler.SESSIONS)).thenReturn(handler);
+        when(container.make(Router.class)).thenReturn(router);
+        when(container.make(ServletHolder.class, router)).thenReturn(holder);
+    }
 
     @Test
     public void routerIsRegisteredWithServer()
             throws Exception
     {
-        final String host = faker.internet().ipV4Address();
-        final int port = faker.number().numberBetween(1025, 65535);
-        final InetSocketAddress address = new InetSocketAddress(host, port);
-
-        when(factory.createServer(address)).thenReturn(server);
-        when(factory.createHandler(ServletContextHandler.SESSIONS)).thenReturn(handler);
-        when(factory.createHolder(any(Router.class))).thenReturn(holder);
-
         launcher.launch(host, port);
 
         verify(handler).setContextPath("/");
@@ -47,5 +56,13 @@ public class LauncherTest
         verify(server).setHandler(handler);
         verify(server).start();
         verify(server).join();
+    }
+
+    @Test
+    public void providerIsRegisteredWhenTheApplicationIsLaunched()
+            throws Exception
+    {
+        launcher.launch(host, port);
+        verify(provider).register(any(Container.class));
     }
 }

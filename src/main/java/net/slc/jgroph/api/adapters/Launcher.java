@@ -1,7 +1,6 @@
 package net.slc.jgroph.api.adapters;
 
 import net.slc.jgroph.api.infrastructure.Router;
-import net.slc.jgroph.api.infrastructure.Routes;
 import net.slc.jgroph.api.infrastructure.Server;
 import net.slc.jgroph.infrastructure.container.Container;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -11,7 +10,8 @@ import java.net.InetSocketAddress;
 
 public class Launcher
 {
-    private final LauncherDependenciesFactory factory;
+    private final Container container;
+    private final Provider provider;
 
     public static void main(final String[] args)
             throws Exception
@@ -20,21 +20,24 @@ public class Launcher
             throw new IllegalArgumentException("Server host and port are required.");
         }
 
-        new Launcher(new LauncherDependenciesFactory()).launch(args[0], Integer.parseInt(args[1]));
+        new Launcher(new Container(), new Provider()).launch(args[0], Integer.parseInt(args[1]));
     }
 
-    Launcher(final LauncherDependenciesFactory factory)
+    Launcher(final Container container, final Provider provider)
     {
-        this.factory = factory;
+        this.container = container;
+        this.provider = provider;
     }
 
     void launch(final String host, final int port)
             throws Exception
     {
-        final Server server = factory.createServer(new InetSocketAddress(host, port));
-        final ServletContextHandler handler = factory.createHandler(ServletContextHandler.SESSIONS);
-        final Router router = new Router(new Container(), new Routes(BookmarksController.class));
-        final ServletHolder holder = factory.createHolder(router);
+        provider.register(container);
+
+        final Server server = container.make(Server.class, new InetSocketAddress(host, port));
+        final ServletContextHandler handler =
+                container.make(ServletContextHandler.class, ServletContextHandler.SESSIONS);
+        final ServletHolder holder = container.make(ServletHolder.class, container.make(Router.class));
 
         handler.setContextPath("/");
         server.setHandler(handler);
