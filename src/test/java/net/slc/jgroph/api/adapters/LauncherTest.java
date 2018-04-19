@@ -9,7 +9,6 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
@@ -30,7 +29,7 @@ public class LauncherTest
     @Mock private ServletHolder holder;
     private String host;
     private int port;
-    @InjectMocks private Launcher launcher;
+    private Launcher launcher;
 
     @Before
     public void setUp()
@@ -43,6 +42,8 @@ public class LauncherTest
         when(container.make(ServletContextHandler.class, ServletContextHandler.SESSIONS)).thenReturn(handler);
         when(container.make(Router.class)).thenReturn(router);
         when(container.make(ServletHolder.class, router)).thenReturn(holder);
+
+        launcher = new Launcher(container, provider);
     }
 
     @Test

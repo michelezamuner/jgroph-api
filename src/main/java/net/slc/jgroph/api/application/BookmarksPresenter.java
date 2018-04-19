@@ -4,5 +4,6 @@ import java.util.List;
 
 public interface BookmarksPresenter
 {
-    void displayAllBookmarks(final List<BookmarkData> bookmarksData);
+    void displayAllBookmarks(final List<BookmarkData> bookmarksData)
+        throws PresenterException;
 }

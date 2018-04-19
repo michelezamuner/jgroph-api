@@ -1,8 +1,8 @@
 package net.slc.jgroph.api.application;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
@@ -18,10 +18,17 @@ public class GetAllBookmarksTest
     @Mock private BookmarksPresenter presenter;
     @Mock private BookmarksRepository repository;
     @Mock private List<BookmarkData> bookmarksData;
-    @InjectMocks private GetAllBookmarks getAllBookmarks;
+    private GetAllBookmarks getAllBookmarks;
+
+    @Before
+    public void setUp()
+    {
+        getAllBookmarks = new GetAllBookmarks(presenter, repository);
+    }
 
     @Test
     public void sendsRepositoryDataToPresenter()
+            throws PresenterException
     {
         when(repository.getAllBookmarks()).thenReturn(bookmarksData);
         getAllBookmarks.perform();

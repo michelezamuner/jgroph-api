@@ -3,7 +3,8 @@ package net.slc.jgroph.api.infrastructure;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 
 /**
- * This wrapper is needed to be able to unit test the Launcher, since some methods of the Jetty Server are final.
+ * This wrapper is needed to be able to unit test the Launcher, since some methods of the Jetty Server are final, and
+ * thus cannot be mocked.
  */
 public class Server
 {
