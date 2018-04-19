@@ -22,8 +22,9 @@ public class RoutesTest
     @Before
     public void setUp()
     {
-        routes = new Routes(ControllerDouble.class);
         when(request.getPath()).thenReturn("/bookmarks/");
+
+        routes = new Routes(ControllerDouble.class);
     }
 
     @Test

@@ -12,6 +12,7 @@ public class GetAllBookmarks
     }
 
     public void perform()
+            throws PresenterException
     {
         presenter.displayAllBookmarks(repository.getAllBookmarks());
     }

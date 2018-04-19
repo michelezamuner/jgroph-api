@@ -19,6 +19,7 @@ public class Router extends HttpServlet
 
     private final Container container;
     private final Routes routes;
+    private final ActionResolver resolver;
 
     public Router()
     {
@@ -29,6 +30,7 @@ public class Router extends HttpServlet
     {
         this.container = container == null ? new Container() : container;
         this.routes = routes == null ? new Routes() : routes;
+        this.resolver = this.container.make(ActionResolver.class);
     }
 
     @Override
@@ -47,13 +49,18 @@ public class Router extends HttpServlet
     }
 
     private void executeAction(final Route route, final Request request, final Response response)
-            throws ServletException
+            throws ServletException, IOException
     {
         final Object controller = container.make(route.getController());
         try {
-            final Method action = controller.getClass().getMethod(route.getAction(), Request.class, Response.class);
+            final Method action =
+                    resolver.resolve(controller.getClass(), route.getAction(), Request.class, Response.class);
             action.invoke(controller, request, response);
-        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+        } catch (InvocationTargetException e) {
+            final String originalMessage = e.getCause() == null ? null : e.getCause().getMessage();
+            final String message = originalMessage == null ? "Error executing action." : originalMessage;
+            throw new IOException(message, e);
+        } catch (ReflectiveOperationException e) {
             throw new ServletException("Invalid action for controller.", e);
         }
     }
