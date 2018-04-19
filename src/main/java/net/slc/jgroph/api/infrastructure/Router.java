@@ -1,8 +1,8 @@
 package net.slc.jgroph.api.infrastructure;
 
 import net.slc.jgroph.infrastructure.container.Container;
+import org.checkerframework.checker.nullness.qual.Nullable;
 
-import javax.annotation.Nullable;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -15,8 +15,7 @@ import java.lang.reflect.Method;
 @WebServlet(name = "router", urlPatterns = {"/"}, loadOnStartup = 1)
 public class Router extends HttpServlet
 {
-    // Class type: 000 (Servlet). Class index: 002
-    private static final long serialVersionUID = 0x000_002L;
+    private static final long serialVersionUID = -838403813674767401L;
 
     private final Container container;
     private final Routes routes;
