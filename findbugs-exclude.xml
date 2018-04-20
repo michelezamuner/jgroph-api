@@ -9,6 +9,9 @@
     <Match>
         <Bug pattern="WEM_WEAK_EXCEPTION_MESSAGING" />
     </Match>
+    <Match>
+        <Bug pattern="NAB_NEEDLESS_BOOLEAN_CONSTANT_CONVERSION" />
+    </Match>
 
     <!-- TODO: Deal with servlet passivation in the future -->
     <Match>
