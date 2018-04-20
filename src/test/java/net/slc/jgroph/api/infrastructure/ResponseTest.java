@@ -1,5 +1,6 @@
 package net.slc.jgroph.api.infrastructure;
 
+import com.github.javafaker.Faker;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -14,12 +15,12 @@ import java.io.PrintWriter;
 
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.junit.Assert.assertSame;
 
 @SuppressWarnings("initialization")
 @RunWith(MockitoJUnitRunner.class)
 public class ResponseTest
 {
+    private final Faker faker = new Faker();
     @Rule public final ExpectedException expectedException = ExpectedException.none();
     @Mock private HttpServletResponse servletResponse;
     @Mock private PrintWriter responseWriter;
@@ -41,10 +42,12 @@ public class ResponseTest
     }
 
     @Test
-    public void exposesWriter()
+    public void writesContents()
             throws ResponseException
     {
-        assertSame(responseWriter, response.getWriter());
+        final String content = faker.lorem().sentence();
+        response.write(content);
+        verify(responseWriter).print(content);
     }
 
     @Test
@@ -53,6 +56,6 @@ public class ResponseTest
     {
         expectedException.expect(ResponseException.class);
         when(servletResponse.getWriter()).thenThrow(new IOException());
-        response.getWriter();
+        response.write(faker.lorem().sentence());
     }
 }

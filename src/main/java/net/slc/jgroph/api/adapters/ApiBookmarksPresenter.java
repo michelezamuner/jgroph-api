@@ -8,6 +8,8 @@ import net.slc.jgroph.api.infrastructure.ResponseException;
 
 import javax.json.*;
 import javax.json.stream.JsonGenerator;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,17 +28,17 @@ public class ApiBookmarksPresenter implements BookmarksPresenter
     {
         response.setJsonContentType();
 
-        final JsonArray json = createJson(bookmarksData);
+        final String json = createJson(bookmarksData);
 
         try {
-            writeJson(json);
+            response.write(json);
         } catch (ResponseException e) {
             final String message = e.getMessage() == null ? "Error writing to the response." : e.getMessage();
             throw new PresenterException(message, e);
         }
     }
 
-    private JsonArray createJson(final List<BookmarkData> bookmarksData)
+    private String createJson(final List<BookmarkData> bookmarksData)
     {
         final JsonArrayBuilder builder = Json.createArrayBuilder();
         for (final BookmarkData bookmark : bookmarksData) {
@@ -47,17 +49,14 @@ public class ApiBookmarksPresenter implements BookmarksPresenter
             builder.add(bookmarkJson);
         }
 
-        return builder.build();
-    }
-
-    private void writeJson(final JsonArray json)
-            throws ResponseException
-    {
         final Map<String, Object> config = new HashMap<>();
         config.put(JsonGenerator.PRETTY_PRINTING, true);
 
-        final JsonWriter writer = Json.createWriterFactory(config).createWriter(response.getWriter());
-        writer.writeArray(json);
+        final Writer stringWriter = new StringWriter();
+        final JsonWriter writer = Json.createWriterFactory(config).createWriter(stringWriter);
+        writer.writeArray(builder.build());
         writer.close();
+
+        return stringWriter.toString().trim();
     }
 }

@@ -12,36 +12,29 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.junit.Assert.assertEquals;
 
 @SuppressWarnings("initialization")
 @RunWith(MockitoJUnitRunner.class)
 public class ApiBookmarksPresenterTest
 {
     @Rule public final ExpectedException exception = ExpectedException.none();
-    @Mock private PrintWriter responseWriter;
     @Mock private Response response;
     private ApiBookmarksPresenter presenter;
 
     @Before
     public void setUp()
-            throws ResponseException
     {
-        when(response.getWriter()).thenReturn(responseWriter);
-
         presenter = new ApiBookmarksPresenter(response);
     }
 
     @Test
-    public void outputsJsonContents()
+    public void usesJsonContentType()
             throws PresenterException
     {
         presenter.displayAllBookmarks(new ArrayList<>());
@@ -56,7 +49,7 @@ public class ApiBookmarksPresenterTest
         exception.expect(PresenterException.class);
         exception.expectMessage(message);
 
-        doThrow(new ResponseException(message)).when(response).getWriter();
+        doThrow(new ResponseException(message)).when(response).write(anyString());
 
         presenter.displayAllBookmarks(new ArrayList<>());
     }
@@ -65,21 +58,14 @@ public class ApiBookmarksPresenterTest
     public void convertsEmptyBookmarksDataToJson()
             throws PresenterException, ResponseException
     {
-        final StringWriter writer = new StringWriter();
-        when(response.getWriter()).thenReturn(new PrintWriter(writer));
-
         presenter.displayAllBookmarks(new ArrayList<>());
-
-        assertEquals("[\n]", writer.toString().trim());
+        verify(response).write("[\n]");
     }
 
     @Test
     public void convertsComplexBookmarksDataToJson()
             throws PresenterException, ResponseException
     {
-        final StringWriter writer = new StringWriter();
-        when(response.getWriter()).thenReturn(new PrintWriter(writer));
-
         final List<BookmarkData> data = new ArrayList<>();
         data.add(new BookmarkData(1, "Title 1"));
         data.add(new BookmarkData(2, "Title 2"));
@@ -96,6 +82,6 @@ public class ApiBookmarksPresenterTest
                 + "        \"title\": \"Title 2\"\n"
                 + "    }\n"
                 + "]";
-        assertEquals(expected, writer.toString().trim());
+        verify(response).write(expected);
     }
 }
