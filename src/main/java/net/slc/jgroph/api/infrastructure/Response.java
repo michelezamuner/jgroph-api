@@ -2,6 +2,7 @@ package net.slc.jgroph.api.infrastructure;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
 
 public class Response
 {
@@ -19,13 +20,13 @@ public class Response
         response.setHeader("Content-Type", "application/json");
     }
 
-    public void write(final String content)
+    public PrintWriter getWriter()
             throws ResponseException
     {
         try {
-            response.getWriter().print(content);
+            return response.getWriter();
         } catch (IOException e) {
-            final String message = e.getMessage() == null ? "Error writing the response" : e.getMessage();
+            final String message = e.getMessage() == null ? "Error accessing the response writer." : e.getMessage();
             throw new ResponseException(message, e);
         }
     }
