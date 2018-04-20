@@ -4,9 +4,9 @@ import net.slc.jgroph.api.application.BookmarksPresenter;
 import net.slc.jgroph.api.application.BookmarksRepository;
 import net.slc.jgroph.api.application.GetAllBookmarks;
 import net.slc.jgroph.api.application.PresenterException;
-import net.slc.jgroph.api.infrastructure.Request;
-import net.slc.jgroph.api.infrastructure.Response;
-import net.slc.jgroph.api.infrastructure.ResponseException;
+import net.slc.jgroph.api.infrastructure.http.Request;
+import net.slc.jgroph.api.infrastructure.http.Response;
+import net.slc.jgroph.api.infrastructure.http.ResponseException;
 import net.slc.jgroph.infrastructure.container.Container;
 
 public class BookmarksController

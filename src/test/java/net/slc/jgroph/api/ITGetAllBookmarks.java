@@ -1,9 +1,8 @@
 package net.slc.jgroph.api;
 
-import net.slc.jgroph.api.infrastructure.Response;
+import net.slc.jgroph.api.infrastructure.http.Response;
 import net.sourceforge.jwebunit.junit.WebTester;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -27,8 +26,16 @@ public class ITGetAllBookmarks
         tester.assertResponseCode(Response.SC_OK);
         tester.assertHeaderEquals("Content-Type", "application/json");
 
-//        final String expected = "[\n  {\n    \"id\": 1,\n    \"title\": \"Title 1\"\n  },\n"
-//                + "  {\n    \"id\": 2,\n    \"title\": \"Title 2\"\n  }\n]";
-//        assertEquals(expected, tester.getPageSource());
+        final String expected = "[\n"
+                + "    {\n"
+                + "        \"id\": 1,\n"
+                + "        \"title\": \"Title 1\"\n"
+                + "    },\n"
+                + "    {\n"
+                + "        \"id\": 2,\n"
+                + "        \"title\": \"Title 2\"\n"
+                + "    }\n"
+                + "]";
+        assertEquals(expected, tester.getPageSource());
     }
 }

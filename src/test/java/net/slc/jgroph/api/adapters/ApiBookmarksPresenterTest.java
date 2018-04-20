@@ -2,8 +2,8 @@ package net.slc.jgroph.api.adapters;
 
 import net.slc.jgroph.api.application.BookmarkData;
 import net.slc.jgroph.api.application.PresenterException;
-import net.slc.jgroph.api.infrastructure.Response;
-import net.slc.jgroph.api.infrastructure.ResponseException;
+import net.slc.jgroph.api.infrastructure.http.Response;
+import net.slc.jgroph.api.infrastructure.http.ResponseException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
