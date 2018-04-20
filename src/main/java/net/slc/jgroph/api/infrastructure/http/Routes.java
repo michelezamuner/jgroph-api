@@ -1,4 +1,4 @@
-package net.slc.jgroph.api.infrastructure;
+package net.slc.jgroph.api.infrastructure.http;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 

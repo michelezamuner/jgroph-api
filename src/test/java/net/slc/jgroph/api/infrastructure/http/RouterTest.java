@@ -1,11 +1,11 @@
-package net.slc.jgroph.api.infrastructure;
+package net.slc.jgroph.api.infrastructure.http;
 
 import net.slc.jgroph.api.adapters.BookmarksController;
+import net.slc.jgroph.api.infrastructure.http.*;
 import net.slc.jgroph.infrastructure.container.Container;
 import org.junit.*;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 

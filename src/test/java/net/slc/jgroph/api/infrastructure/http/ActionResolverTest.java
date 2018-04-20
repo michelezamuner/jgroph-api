@@ -1,6 +1,9 @@
-package net.slc.jgroph.api.infrastructure;
+package net.slc.jgroph.api.infrastructure.http;
 
 import net.slc.jgroph.api.adapters.BookmarksController;
+import net.slc.jgroph.api.infrastructure.http.ActionResolver;
+import net.slc.jgroph.api.infrastructure.http.Request;
+import net.slc.jgroph.api.infrastructure.http.Response;
 import org.junit.Test;
 
 import java.lang.reflect.Method;

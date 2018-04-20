@@ -1,6 +1,7 @@
-package net.slc.jgroph.api.infrastructure;
+package net.slc.jgroph.api.infrastructure.http;
 
 import com.github.javafaker.Faker;
+import net.slc.jgroph.api.infrastructure.http.Request;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
