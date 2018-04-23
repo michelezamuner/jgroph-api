@@ -1,7 +1,6 @@
-package net.slc.jgroph.api.infrastructure.http;
+package net.slc.jgroph.api.infrastructure.http_server;
 
 import net.slc.jgroph.api.adapters.BookmarksController;
-import net.slc.jgroph.api.infrastructure.http.*;
 import net.slc.jgroph.infrastructure.container.Container;
 import org.junit.*;
 import org.junit.rules.ExpectedException;

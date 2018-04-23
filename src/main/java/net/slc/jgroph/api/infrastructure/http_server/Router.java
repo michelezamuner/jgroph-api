@@ -1,4 +1,4 @@
-package net.slc.jgroph.api.infrastructure.http;
+package net.slc.jgroph.api.infrastructure.http_server;
 
 import net.slc.jgroph.infrastructure.container.Container;
 import org.checkerframework.checker.nullness.qual.Nullable;

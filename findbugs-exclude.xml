@@ -15,7 +15,7 @@
 
     <!-- TODO: Deal with servlet passivation in the future -->
     <Match>
-        <Class name="net.slc.jgroph.api.infrastructure.http.Router" />
+        <Class name="net.slc.jgroph.api.infrastructure.http_server.Router" />
         <Bug pattern="SE_BAD_FIELD" />
     </Match>
 </FindBugsFilter>
