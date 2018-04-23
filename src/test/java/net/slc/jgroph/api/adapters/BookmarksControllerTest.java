@@ -1,12 +1,9 @@
 package net.slc.jgroph.api.adapters;
 
-import net.slc.jgroph.api.application.BookmarksPresenter;
-import net.slc.jgroph.api.application.GetAllBookmarks;
-import net.slc.jgroph.api.application.PresenterException;
-import net.slc.jgroph.api.infrastructure.http.Request;
-import net.slc.jgroph.api.infrastructure.http.Response;
-import net.slc.jgroph.api.application.BookmarksRepository;
-import net.slc.jgroph.api.infrastructure.http.ResponseException;
+import net.slc.jgroph.api.application.*;
+import net.slc.jgroph.api.infrastructure.http_server.Request;
+import net.slc.jgroph.api.infrastructure.http_server.Response;
+import net.slc.jgroph.api.infrastructure.http_server.ResponseException;
 import net.slc.jgroph.infrastructure.container.Container;
 import org.junit.Before;
 import org.junit.Rule;
@@ -45,7 +42,7 @@ public class BookmarksControllerTest
 
     @Test
     public void indexCallsUseCaseWithCorrectDependencies()
-            throws ResponseException, PresenterException
+            throws ResponseException, PresenterException, RepositoryException
     {
         controller.index(request, response);
         verify(getAllBookmarks).perform();
@@ -53,13 +50,26 @@ public class BookmarksControllerTest
 
     @Test
     public void convertsPresenterExceptionsToResponseExceptions()
-            throws PresenterException, ResponseException
+            throws ResponseException, PresenterException, RepositoryException
     {
         final String message = "Error message";
         exception.expect(ResponseException.class);
         exception.expectMessage(message);
 
         doThrow(new PresenterException(message)).when(getAllBookmarks).perform();
+
+        controller.index(request, response);
+    }
+
+    @Test
+    public void covertsRepositoryExceptionsToResponseExceptions()
+            throws ResponseException, PresenterException, RepositoryException
+    {
+        final String message = "Error message";
+        exception.expect(ResponseException.class);
+        exception.expectMessage(message);
+
+        doThrow(new RepositoryException(message)).when(getAllBookmarks).perform();
 
         controller.index(request, response);
     }

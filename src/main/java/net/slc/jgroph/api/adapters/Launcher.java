@@ -1,7 +1,7 @@
 package net.slc.jgroph.api.adapters;
 
-import net.slc.jgroph.api.infrastructure.http.Router;
-import net.slc.jgroph.api.infrastructure.http.Server;
+import net.slc.jgroph.api.infrastructure.http_server.Router;
+import net.slc.jgroph.api.infrastructure.http_server.Server;
 import net.slc.jgroph.infrastructure.container.Container;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;

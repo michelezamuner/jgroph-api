@@ -12,7 +12,7 @@ public class GetAllBookmarks
     }
 
     public void perform()
-            throws PresenterException
+            throws PresenterException, RepositoryException
     {
         presenter.displayAllBookmarks(repository.getAllBookmarks());
     }

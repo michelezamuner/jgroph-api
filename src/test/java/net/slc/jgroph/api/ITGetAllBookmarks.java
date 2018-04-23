@@ -1,6 +1,6 @@
 package net.slc.jgroph.api;
 
-import net.slc.jgroph.api.infrastructure.http.Response;
+import net.slc.jgroph.api.infrastructure.http_server.Response;
 import net.sourceforge.jwebunit.junit.WebTester;
 import org.junit.Before;
 import org.junit.Test;

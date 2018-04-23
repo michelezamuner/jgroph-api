@@ -4,5 +4,6 @@ import java.util.List;
 
 public interface BookmarksRepository
 {
-    List<BookmarkData> getAllBookmarks();
+    List<BookmarkData> getAllBookmarks()
+        throws RepositoryException;
 }

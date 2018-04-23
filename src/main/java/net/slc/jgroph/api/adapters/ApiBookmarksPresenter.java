@@ -3,8 +3,8 @@ package net.slc.jgroph.api.adapters;
 import net.slc.jgroph.api.application.BookmarkData;
 import net.slc.jgroph.api.application.BookmarksPresenter;
 import net.slc.jgroph.api.application.PresenterException;
-import net.slc.jgroph.api.infrastructure.http.Response;
-import net.slc.jgroph.api.infrastructure.http.ResponseException;
+import net.slc.jgroph.api.infrastructure.http_server.Response;
+import net.slc.jgroph.api.infrastructure.http_server.ResponseException;
 
 import javax.json.*;
 import javax.json.stream.JsonGenerator;

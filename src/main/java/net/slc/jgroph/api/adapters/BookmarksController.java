@@ -1,12 +1,9 @@
 package net.slc.jgroph.api.adapters;
 
-import net.slc.jgroph.api.application.BookmarksPresenter;
-import net.slc.jgroph.api.application.BookmarksRepository;
-import net.slc.jgroph.api.application.GetAllBookmarks;
-import net.slc.jgroph.api.application.PresenterException;
-import net.slc.jgroph.api.infrastructure.http.Request;
-import net.slc.jgroph.api.infrastructure.http.Response;
-import net.slc.jgroph.api.infrastructure.http.ResponseException;
+import net.slc.jgroph.api.application.*;
+import net.slc.jgroph.api.infrastructure.http_server.Request;
+import net.slc.jgroph.api.infrastructure.http_server.Response;
+import net.slc.jgroph.api.infrastructure.http_server.ResponseException;
 import net.slc.jgroph.infrastructure.container.Container;
 
 public class BookmarksController
@@ -29,6 +26,9 @@ public class BookmarksController
             getAllBookmarks.perform();
         } catch (PresenterException e) {
             final String message = e.getMessage() == null ? "Error presenting output data." : e.getMessage();
+            throw new ResponseException(message, e);
+        } catch (RepositoryException e) {
+            final String message = e.getMessage() == null ? "Error retrieve data from storage." : e.getMessage();
             throw new ResponseException(message, e);
         }
     }

@@ -28,7 +28,7 @@ public class GetAllBookmarksTest
 
     @Test
     public void sendsRepositoryDataToPresenter()
-            throws PresenterException
+            throws PresenterException, RepositoryException
     {
         when(repository.getAllBookmarks()).thenReturn(bookmarksData);
         getAllBookmarks.perform();
