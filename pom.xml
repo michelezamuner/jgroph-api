@@ -51,6 +51,16 @@
             <version>1.1.2</version>
         </dependency>
         <dependency>
+            <groupId>org.checkerframework</groupId>
+            <artifactId>checker-qual</artifactId>
+            <version>2.5.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.checkerframework</groupId>
+            <artifactId>jdk8</artifactId>
+            <version>2.5.0</version>
+        </dependency>
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.11</version>
@@ -80,16 +90,6 @@
             <version>1.7.25</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.checkerframework</groupId>
-            <artifactId>checker-qual</artifactId>
-            <version>2.5.0</version>
-        </dependency>
-        <dependency>
-            <groupId>org.checkerframework</groupId>
-            <artifactId>jdk8</artifactId>
-            <version>2.5.0</version>
-        </dependency>
     </dependencies>
 
     <build>
@@ -99,20 +99,19 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>3.1.0</version>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>net.slc.jgroph.api.adapters.Launcher</mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
                 <executions>
                     <execution>
+                        <id>build-api</id>
                         <phase>package</phase>
                         <goals>
                             <goal>single</goal>
                         </goals>
                         <configuration>
+                            <archive>
+                                <manifest>
+                                    <mainClass>net.slc.jgroph.api.adapters.Launcher</mainClass>
+                                </manifest>
+                            </archive>
                             <descriptorRefs>
                                 <descriptorRef>jar-with-dependencies</descriptorRef>
                             </descriptorRefs>
@@ -128,7 +127,7 @@
                 <version>1.6.0</version>
                 <executions>
                     <execution>
-                        <id>start-client</id>
+                        <id>start-api</id>
                         <phase>pre-integration-test</phase>
                         <goals>
                             <goal>exec</goal>
@@ -138,12 +137,14 @@
                             <arguments>
                                 <argument>server.sh</argument>
                                 <argument>start</argument>
+                                <argument>api</argument>
+                                <argument>8080</argument>
                                 <argument>${project.build.directory}/${project.build.finalName}.jar</argument>
                             </arguments>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>stop-server</id>
+                        <id>stop-api</id>
                         <phase>post-integration-test</phase>
                         <goals>
                             <goal>exec</goal>
@@ -153,10 +154,16 @@
                             <arguments>
                                 <argument>server.sh</argument>
                                 <argument>stop</argument>
+                                <argument>api</argument>
                             </arguments>
                         </configuration>
                     </execution>
                 </executions>
+                <configuration>
+                    <environmentVariables>
+                        <JGROPH_BOOKMARKS_SERVICES_API_URL>https://hidden-oasis-45706.herokuapp.com/bookmarks</JGROPH_BOOKMARKS_SERVICES_API_URL>
+                    </environmentVariables>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

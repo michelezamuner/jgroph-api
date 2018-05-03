@@ -14,7 +14,7 @@ public class Client
 {
     private final ConnectionHandler connectionHandler;
 
-    Client()
+    public Client()
     {
         this(new ConnectionHandler());
     }

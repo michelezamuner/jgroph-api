@@ -7,9 +7,11 @@ shopt -s dotglob
 IFS=$'\n\t'
 
 readonly command="${1:-}"
-readonly jar_path="${2:-}"
-readonly pid_file="pid.file"
-readonly server_log="server.log"
+readonly name="${2:-}"
+readonly port="${3:-}"
+readonly jar_path="${4:-}"
+readonly pid_file="${name}.pid"
+readonly server_log="${name}.log"
 
 kill_server() {
     local readonly pid="$(cat ${pid_file})"
@@ -30,8 +32,8 @@ if [ "${command}" == "start" ]; then
         kill_server
     fi
 
-    echo "Starting server with command 'java -jar ${jar_path} 0.0.0.0 8080 >>${server_log} 2>>&1 &'." >>"${server_log}"
-    nohup java -jar "${jar_path}" 0.0.0.0 8080 >>"${server_log}" 2>&1 &
+    echo "Starting ${name} server with command 'java -jar ${jar_path} 0.0.0.0 ${port} >>${server_log} 2>>&1 &'." >>"${server_log}"
+    nohup java -jar "${jar_path}" 0.0.0.0 "${port}" >>"${server_log}" 2>&1 &
     [ $? == 0 ] && echo $! >"${pid_file}"
 elif [ "${command}" == "stop" ]; then
     if [ ! -f "${pid_file}" ]; then
