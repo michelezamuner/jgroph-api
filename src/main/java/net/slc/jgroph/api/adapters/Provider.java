@@ -2,7 +2,6 @@ package net.slc.jgroph.api.adapters;
 
 import net.slc.jgroph.api.application.BookmarksPresenter;
 import net.slc.jgroph.api.application.BookmarksRepository;
-import net.slc.jgroph.api.infrastructure.MemoryBookmarksRepository;
 import net.slc.jgroph.api.infrastructure.http_server.Response;
 import net.slc.jgroph.api.infrastructure.http_server.Routes;
 import net.slc.jgroph.api.infrastructure.http_server.Server;

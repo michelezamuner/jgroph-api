@@ -1,5 +1,6 @@
 package net.slc.jgroph.api.infrastructure.http_client;
 
+import com.github.javafaker.Faker;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -8,63 +9,149 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnitRunner;
 
-import java.io.*;
-import java.net.HttpURLConnection;
-import java.nio.charset.StandardCharsets;
-
-import static junit.framework.TestCase.assertEquals;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
+import static org.mockito.ArgumentMatchers.anyString;
+
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.ProtocolException;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.mockito.Mockito.*;
 
 @SuppressWarnings("initialization")
 @RunWith(MockitoJUnitRunner.class)
 public class ClientTest
 {
     @Rule public ExpectedException exception = ExpectedException.none();
+    private final Faker faker = new Faker();
+    @Mock private ConnectionHandler connectionHandler;
     @Mock private HttpURLConnection connection;
-    @Mock private Url url;
     private Client client;
 
     @Before
     public void setUp()
             throws IOException
     {
-        final String response = "Hello, World!";
-        final InputStream responseStream = new ByteArrayInputStream(response.getBytes(StandardCharsets.UTF_8));
+        when(connectionHandler.open(anyString())).thenReturn(connection);
 
-        when(url.openConnection()).thenReturn(connection);
-        when(connection.getInputStream()).thenReturn(responseStream);
-
-        client = new Client();
+        client = new Client(connectionHandler);
     }
 
     @Test
-    public void sendsGetRequests()
-            throws IOException, ClientException
+    public void getsResponsesOfGETRequests()
+            throws ClientException, IOException
     {
-        when(connection.getResponseCode()).thenReturn(200);
-        when(connection.getContentType()).thenReturn("text/plain");
-        
+        final String url = faker.internet().url();
+        final int responseCode = faker.number().numberBetween(200, 500);
+        final String contentType = faker.lorem().word();
+        final String body = faker.lorem().paragraph();
+
+        when(connection.getResponseCode()).thenReturn(responseCode);
+        when(connection.getContentType()).thenReturn(contentType);
+        when(connection.getInputStream()).thenReturn(new ByteArrayInputStream(body.getBytes(UTF_8)));
+
         final Response response = client.sendGet(url);
 
+        verify(connectionHandler).open(url);
         verify(connection).setRequestMethod("GET");
-
-        assertEquals(200, response.getResponseCode());      // Because of autoboxing
-        assertSame("text/plain", response.getContentType());
-        assertEquals("Hello, World!", response.getBody());
+        assertEquals(responseCode, response.getResponseCode());
+        assertSame(contentType, response.getContentType());
+        assertEquals(body, response.getBody());
     }
 
     @Test
-    public void failsIfCannotOpenConnection()
-            throws IOException, ClientException
+    public void failsIfInvalidUrl()
+            throws ClientException
     {
-        final String message = "Error message.";
+        exception.expect(ClientException.class);
+        exception.expectMessage("invalid url");
+
+        final Client client = new Client();
+        client.sendGet("some invalid url");
+    }
+
+    @Test
+    public void failsIfErrorOpeningConnection()
+            throws ClientException, IOException
+    {
+        final String message = faker.lorem().sentence();
         exception.expect(ClientException.class);
         exception.expectMessage(message);
 
-        when(url.openConnection()).thenThrow(new IOException(message));
+        final String url = faker.internet().url();
+        when(connectionHandler.open(url)).thenThrow(new IOException(message));
 
         client.sendGet(url);
+    }
+
+    @Test
+    public void failsIfErrorSettingRequestMethod()
+            throws ClientException, ProtocolException
+    {
+        final String message = faker.lorem().sentence();
+        exception.expect(ClientException.class);
+        exception.expectMessage(message);
+
+        doThrow(new ProtocolException(message)).when(connection).setRequestMethod(anyString());
+
+        client.sendGet(faker.internet().url());
+    }
+
+    @Test
+    public void failsIfErrorGettingResponseCode()
+            throws ClientException, IOException
+    {
+        final String message = faker.lorem().sentence();
+        exception.expect(ClientException.class);
+        exception.expectMessage(message);
+
+        when(connection.getResponseCode()).thenThrow(new IOException(message));
+
+        client.sendGet(faker.internet().url());
+    }
+
+    @Test
+    public void failsIfErrorOpeningResponseBodyInputStream()
+            throws ClientException, IOException
+    {
+        final String message = faker.lorem().sentence();
+        exception.expect(ClientException.class);
+        exception.expectMessage(message);
+
+        when(connection.getInputStream()).thenThrow(new IOException(message));
+
+        client.sendGet(faker.internet().url());
+    }
+
+    @Test
+    public void failsIfErrorReadingResponseBodyContent()
+            throws ClientException, IOException
+    {
+        exception.expect(ClientException.class);
+        exception.expectMessage("Underlying input stream returned zero bytes");
+
+        when(connection.getInputStream()).thenReturn(mock(InputStream.class));
+
+        client.sendGet(faker.internet().url());
+    }
+
+    @Test
+    public void failsIfErrorClosingResponseBodyInputStream()
+            throws ClientException, IOException
+    {
+        final String message = faker.lorem().sentence();
+        exception.expect(ClientException.class);
+        exception.expectMessage(message);
+
+        final InputStream stream = mock(InputStream.class);
+        doThrow(new IOException(message)).when(stream).close();
+
+        when(connection.getInputStream()).thenReturn(stream);
+
+        client.sendGet(faker.internet().url());
     }
 }

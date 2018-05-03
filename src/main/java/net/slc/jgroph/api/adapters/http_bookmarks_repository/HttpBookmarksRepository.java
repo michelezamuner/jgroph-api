@@ -6,8 +6,6 @@ import net.slc.jgroph.api.application.RepositoryException;
 import net.slc.jgroph.api.infrastructure.http_client.Client;
 import net.slc.jgroph.api.infrastructure.http_client.ClientException;
 import net.slc.jgroph.api.infrastructure.http_client.Response;
-import net.slc.jgroph.api.infrastructure.http_client.Url;
-import net.slc.jgroph.infrastructure.container.Container;
 
 import javax.json.*;
 import java.io.StringReader;
@@ -16,25 +14,25 @@ import java.util.List;
 
 public class HttpBookmarksRepository implements BookmarksRepository
 {
-    private final Container container;
+    private final Client client;
+    private final Configuration configuration;
 
-    public HttpBookmarksRepository(final Container container)
+    public HttpBookmarksRepository(final Client client, final Configuration configuration)
     {
-        this.container = container;
+        this.client = client;
+        this.configuration = configuration;
     }
 
     @Override
     public List<BookmarkData> getAllBookmarks()
             throws RepositoryException
     {
-        final Configuration configuration = container.make(Configuration.class);
-        final Client client = container.make(Client.class);
-        final Response response = getResponse(client, container.make(Url.class, configuration.getRepositoryUrl()));
+        final Response response = getResponse(client, configuration.getRepositoryUrl());
 
         return getBookmarksData(response.getBody());
     }
 
-    private Response getResponse(final Client client, final Url url)
+    private Response getResponse(final Client client, final String url)
             throws RepositoryException
     {
         try {

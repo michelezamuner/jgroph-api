@@ -1,74 +1,99 @@
 package net.slc.jgroph.api.infrastructure.http_client;
 
 import java.io.BufferedReader;
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.net.HttpURLConnection;
-import java.nio.charset.StandardCharsets;
+import java.net.ProtocolException;
+import java.net.URLConnection;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class Client
 {
-    public Response sendGet(final Url url)
+    private final ConnectionHandler connectionHandler;
+
+    Client()
+    {
+        this(new ConnectionHandler());
+    }
+
+    Client(final ConnectionHandler connectionHandler)
+    {
+        this.connectionHandler = connectionHandler;
+    }
+
+    public Response sendGet(final String url)
             throws ClientException
     {
-        final HttpURLConnection connection = getConnection(url);
-        final BufferedReader reader = getReader(connection);
-        final StringBuilder responseBody = new StringBuilder();
+        final HttpURLConnection connection = (HttpURLConnection)getConnection(url);
 
         try {
-            String responseLine;
-            while ((responseLine = reader.readLine()) != null) {
-                responseBody.append(responseLine);
+            connection.setRequestMethod("GET");
+        } catch (ProtocolException e) {
+            final String message = e.getMessage() == null ? "Unexpected empty exception message." : e.getMessage();
+            throw new ClientException(message, e);
+        }
+
+        try {
+            return new Response(connection.getResponseCode(), connection.getContentType(), getResponseBody(connection));
+        } catch (IOException e) {
+            final String message = e.getMessage() == null ? "Unexpected empty exception message." : e.getMessage();
+            throw new ClientException(message, e);
+        }
+    }
+
+    private URLConnection getConnection(final String url)
+            throws ClientException
+    {
+        try {
+            return connectionHandler.open(url);
+        } catch (IOException e) {
+            final String message = e.getMessage() == null ? "Unexpected empty exception message." : e.getMessage();
+            throw new ClientException(message, e);
+        }
+    }
+
+    private String getResponseBody(final URLConnection connection)
+            throws ClientException
+    {
+        final BufferedReader reader = getResponseReader(connection);
+
+        final StringBuilder body = new StringBuilder();
+        String bodyLine;
+        try {
+            while ((bodyLine = reader.readLine()) != null) {
+                body.append(bodyLine);
             }
         } catch (IOException e) {
-            final String message = e.getMessage() == null ? "Error reading response line." : e.getMessage();
+            final String message = e.getMessage() == null ? "Unexpected empty exception message." : e.getMessage();
             throw new ClientException(message, e);
         } finally {
-            closeReader(reader);
+            closeResponseReader(reader);
         }
 
-        try {
-            return new Response(connection.getResponseCode(), connection.getContentType(), responseBody.toString());
-        } catch (IOException e) {
-            final String message = e.getMessage() == null ? "Error getting response code." : e.getMessage();
-            throw new ClientException(message, e);
-        }
+        return body.toString();
     }
 
-    private HttpURLConnection getConnection(final Url url)
+    private BufferedReader getResponseReader(final URLConnection connection)
             throws ClientException
     {
         try {
-            final HttpURLConnection connection = url.openConnection();
-            connection.setRequestMethod("GET");
-            return connection;
+            return new BufferedReader(new InputStreamReader(connection.getInputStream(), UTF_8));
         } catch (IOException e) {
-            final String message = e.getMessage() == null ? "Error opening connection." : e.getMessage();
+            final String message = e.getMessage() == null ? "Unexpected empty exception message." : e.getMessage();
             throw new ClientException(message, e);
         }
     }
 
-    private BufferedReader getReader(final HttpURLConnection connection)
-            throws ClientException
-    {
-        try {
-            return new BufferedReader(
-                    new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8)
-            );
-        } catch (IOException e) {
-            final String message = e.getMessage() == null ? "Error opening connection stream." : e.getMessage();
-            throw new ClientException(message, e);
-        }
-    }
-
-    private void closeReader(final Closeable reader)
+    private void closeResponseReader(final Reader reader)
             throws ClientException
     {
         try {
             reader.close();
         } catch (IOException e) {
-            final String message = e.getMessage() == null ? "Error closing response reader." : e.getMessage();
+            final String message = e.getMessage() == null ? "Unexpected empty exception message." : e.getMessage();
             throw new ClientException(message, e);
         }
     }
