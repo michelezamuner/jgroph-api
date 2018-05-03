@@ -4,6 +4,7 @@ public class Configuration
 {
     public String getRepositoryUrl()
     {
-        return "";
+        final String env = System.getenv("JGROPH_BOOKMARKS_SERVICES_API_URL");
+        return env == null ? "" : env;
     }
 }
