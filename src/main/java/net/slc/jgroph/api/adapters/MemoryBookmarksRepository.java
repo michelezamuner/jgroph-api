@@ -1,4 +1,4 @@
-package net.slc.jgroph.api.infrastructure;
+package net.slc.jgroph.api.adapters;
 
 import net.slc.jgroph.api.application.BookmarkData;
 import net.slc.jgroph.api.application.BookmarksRepository;

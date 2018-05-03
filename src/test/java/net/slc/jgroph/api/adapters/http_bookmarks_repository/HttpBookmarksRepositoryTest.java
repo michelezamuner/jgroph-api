@@ -6,8 +6,6 @@ import net.slc.jgroph.api.application.RepositoryException;
 import net.slc.jgroph.api.infrastructure.http_client.Client;
 import net.slc.jgroph.api.infrastructure.http_client.ClientException;
 import net.slc.jgroph.api.infrastructure.http_client.Response;
-import net.slc.jgroph.api.infrastructure.http_client.Url;
-import net.slc.jgroph.infrastructure.container.Container;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,21 +27,17 @@ public class HttpBookmarksRepositoryTest
 {
     @Rule public ExpectedException exception = ExpectedException.none();
     private final Faker faker = new Faker();
-    @Mock private Url url;
+    private String url;
     @Mock private Client client;
     @Mock private Configuration configuration;
-    @Mock private Container container;
     private HttpBookmarksRepository repository;
 
     @Before
     public void setUp()
     {
-        final String urlString = faker.internet().url();
-        when(configuration.getRepositoryUrl()).thenReturn(urlString);
-        when(container.make(Url.class, urlString)).thenReturn(url);
-        when(container.make(Client.class)).thenReturn(client);
-        when(container.make(Configuration.class)).thenReturn(configuration);
-        repository = new HttpBookmarksRepository(container);
+        url = faker.internet().url();
+        when(configuration.getRepositoryUrl()).thenReturn(url);
+        repository = new HttpBookmarksRepository(client, configuration);
     }
 
     @Test
@@ -94,7 +88,7 @@ public class HttpBookmarksRepositoryTest
     public void failsWhenUnableToGetData()
             throws ClientException, RepositoryException
     {
-        final String message = "Error message.";
+        final String message = faker.lorem().sentence();
         exception.expect(RepositoryException.class);
         exception.expectMessage(message);
 
