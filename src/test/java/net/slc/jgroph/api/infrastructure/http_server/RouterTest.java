@@ -52,13 +52,6 @@ public class RouterTest
     }
 
     @Test
-    public void supportsDefaultConstructor()
-    {
-        final Router router = new Router();
-        Assert.assertNotNull(router);
-    }
-
-    @Test
     public void convertsRouteNotFoundExceptionToServletException()
             throws RouteNotFoundException, ServletException, IOException
     {

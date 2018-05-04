@@ -1,7 +1,6 @@
 package net.slc.jgroph.api.infrastructure.http_server;
 
 import net.slc.jgroph.infrastructure.container.Container;
-import org.checkerframework.checker.nullness.qual.Nullable;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -21,15 +20,10 @@ public class Router extends HttpServlet
     private final Routes routes;
     private final ActionResolver resolver;
 
-    public Router()
+    public Router(final Container container, final Routes routes)
     {
-        this(null, null);
-    }
-
-    public Router(@Nullable final Container container, @Nullable final Routes routes)
-    {
-        this.container = container == null ? new Container() : container;
-        this.routes = routes == null ? new Routes() : routes;
+        this.container = container;
+        this.routes = routes;
         this.resolver = this.container.make(ActionResolver.class);
     }
 
