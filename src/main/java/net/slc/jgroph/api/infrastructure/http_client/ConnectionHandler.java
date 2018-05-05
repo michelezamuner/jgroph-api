@@ -9,6 +9,17 @@ class ConnectionHandler
     URLConnection open(final String url)
             throws IOException
     {
-        return new URL(url).openConnection();
+        return getUrl(url).openConnection();
+    }
+
+    private URL getUrl(final String url)
+        throws IOException
+    {
+        try {
+            return new URL(url);
+        } catch (IOException e) {
+            final String message = e.getMessage() == null ? "Unexpected empty error message" : e.getMessage();
+            throw new IOException("Invalid URL " + url + ": " + message, e);
+        }
     }
 }

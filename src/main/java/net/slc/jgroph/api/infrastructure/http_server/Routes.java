@@ -1,23 +1,44 @@
 package net.slc.jgroph.api.infrastructure.http_server;
 
-import org.checkerframework.checker.nullness.qual.NonNull;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 public class Routes
 {
-    private final Class<@NonNull ?>[] controllers;
+    private Map<RequestMethod, Map<String, Action>> actions = new HashMap<>();
+    private Map<Class<? extends Throwable>, Handler> handlers = new HashMap<>();
 
-    public Routes(final Class<@NonNull ?> ...controllers)
+    @SuppressWarnings("dereference.of.nullable") // checker framework doesn't know about Map.putIfAbsent
+    public void addAction(final RequestMethod method, final String pathRegex, final Action action)
     {
-        this.controllers = controllers;
+        actions.putIfAbsent(method, new HashMap<>());
+        actions.get(method).put(pathRegex, action);
     }
 
-    Route get(final Request request)
-            throws RouteNotFoundException
+    public void addHandler(final Class<? extends Throwable> type, final Handler handler)
     {
-        if ("/bookmarks/".equals(request.getPath())) {
-            return new Route(controllers[0]);
+        handlers.put(type, handler);
+    }
+
+    Optional<Action> getAction(final RequestMethod method, final String path)
+    {
+        final Map<String, Action> actionsOfMethod = actions.get(method);
+        if (actionsOfMethod == null) {
+            return Optional.empty();
         }
 
-        throw new RouteNotFoundException(String.format("No route found for %s.", request.getPath()));
+        for (final Map.Entry<String, Action> entry : actionsOfMethod.entrySet()) {
+            if (path.matches(entry.getKey())) {
+                return Optional.ofNullable(entry.getValue());
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    Optional<Handler> getHandler(final Class<? extends Throwable> type)
+    {
+        return Optional.ofNullable(handlers.get(type));
     }
 }

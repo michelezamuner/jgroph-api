@@ -1,50 +1,72 @@
 package net.slc.jgroph.api.infrastructure.http_server;
 
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
 
-import static org.mockito.Mockito.when;
+import java.util.Optional;
+
 import static org.junit.Assert.assertSame;
+import static org.mockito.Mockito.mock;
 
 @SuppressWarnings("initialization")
-@RunWith(MockitoJUnitRunner.class)
 public class RoutesTest
 {
-    @Rule public final ExpectedException exception = ExpectedException.none();
-    @Mock private Request request;
     private Routes routes;
 
     @Before
     public void setUp()
     {
-        when(request.getPath()).thenReturn("/bookmarks/");
-
-        routes = new Routes(ControllerDouble.class);
+        routes = new Routes();
     }
 
     @Test
-    public void findsIndexBookmarksRoute()
-            throws RouteNotFoundException
+    public void registerActionWithExactMatch()
     {
-        final Route route = routes.get(request);
-        assertSame(ControllerDouble.class, route.getController());
-        assertSame("index", route.getAction());
+        final Action expectedGetAllBookmarks = mock(Action.class);
+        final Action expectedGetSingleBookmark = mock(Action.class);
+        final Action expectedPostNewBookmark = mock(Action.class);
+
+        routes.addAction(RequestMethod.GET, "/bookmarks/", expectedGetAllBookmarks);
+        routes.addAction(RequestMethod.GET, "/bookmarks/1234", expectedGetSingleBookmark);
+        routes.addAction(RequestMethod.POST, "/bookmarks/", expectedPostNewBookmark);
+
+        final Optional<Action> actionGetAllBookmarks = routes.getAction(RequestMethod.GET, "/bookmarks/");
+        assertSame(expectedGetAllBookmarks, actionGetAllBookmarks.get());
+
+        final Optional<Action> actionGetSingleBookmark = routes.getAction(RequestMethod.GET, "/bookmarks/1234");
+        assertSame(expectedGetSingleBookmark, actionGetSingleBookmark.get());
+
+        final Optional<Action> actionPostNewBookmark = routes.getAction(RequestMethod.POST, "/bookmarks/");
+        assertSame(expectedPostNewBookmark, actionPostNewBookmark.get());
     }
 
     @Test
-    public void failsIfRouteNotFound()
-            throws RouteNotFoundException
+    public void registerActionWithRegexMatch()
     {
-        final String path = "invalid path";
-        when(request.getPath()).thenReturn(path);
-        exception.expect(RouteNotFoundException.class);
-        exception.expectMessage("No route found for " + path + ".");
+        final Action expected = mock(Action.class);
 
-        routes.get(request);
+        routes.addAction(RequestMethod.GET, "/bookmarks/?.*", expected);
+
+        final Optional<Action> actionSingleBookmark = routes.getAction(RequestMethod.GET, "/bookmarks/1234");
+        assertSame(expected, actionSingleBookmark.get());
+
+        final Optional<Action> actionAllBookmarks = routes.getAction(RequestMethod.GET, "/bookmarks");
+        assertSame(expected, actionAllBookmarks.get());
+    }
+
+    @Test
+    public void registerHandlerWithExactExceptionClass()
+    {
+        final Handler expectedRuntimeException = mock(Handler.class);
+        final Handler expectedIllegalArgumentException = mock(Handler.class);
+
+        routes.addHandler(RuntimeException.class, expectedRuntimeException);
+        routes.addHandler(IllegalArgumentException.class, expectedIllegalArgumentException);
+
+        final Optional<Handler> handlerRuntimeException = routes.getHandler(RuntimeException.class);
+        assertSame(expectedRuntimeException, handlerRuntimeException.get());
+
+        final Optional<Handler> handlerIllegalArgumentException = routes.getHandler(IllegalArgumentException.class);
+        assertSame(expectedIllegalArgumentException, handlerIllegalArgumentException.get());
     }
 }
