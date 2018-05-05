@@ -1,8 +1,9 @@
 package net.slc.jgroph.api.infrastructure.http_server;
 
-import net.slc.jgroph.api.adapters.BookmarksController;
-import net.slc.jgroph.infrastructure.container.Container;
-import org.junit.*;
+import com.github.javafaker.Faker;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -12,86 +13,96 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Optional;
 
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
 @SuppressWarnings("initialization")
+@RunWith(MockitoJUnitRunner.class)
 public class RouterTest
 {
     @Rule public final ExpectedException exception = ExpectedException.none();
+    private final Faker faker = new Faker();
+    private RequestMethod method;
+    private String path;
+    @Mock private Factory factory;
     @Mock private HttpServletRequest servletRequest;
     @Mock private HttpServletResponse servletResponse;
     @Mock private Request request;
     @Mock private Response response;
-    @Mock private Container container;
     @Mock private Routes routes;
-    @Mock private Route route;
-    @Mock private BookmarksController bookmarksController;
-    @Mock private ActionResolver resolver;
     private Router router;
 
-    @SuppressWarnings("unchecked")
     @Before
     public void setUp()
-            throws RouteNotFoundException, NoSuchMethodException
     {
-        when(container.make(ActionResolver.class)).thenReturn(resolver);
-        when(container.make(Request.class, servletRequest)).thenReturn(request);
-        when(container.make(Response.class, servletResponse)).thenReturn(response);
-        when(routes.get(request)).thenReturn(route);
-        when(route.getController()).thenReturn((Class)BookmarksController.class);
-        when(container.make(BookmarksController.class)).thenReturn(bookmarksController);
-        when(route.getAction()).thenReturn("index");
-        when(resolver.resolve(bookmarksController.getClass(), "index", Request.class, Response.class))
-                .thenReturn(BookmarksController.class.getMethod("index", Request.class, Response.class));
-
-        router = new Router(container, routes);
+        method = RequestMethod.values()[faker.number().numberBetween(0, RequestMethod.values().length)];
+        path = faker.lorem().word();
+        when(request.getMethod()).thenReturn(method);
+        when(request.getPath()).thenReturn(path);
+        when(factory.createRequest(servletRequest)).thenReturn(request);
+        when(factory.createResponse(servletResponse)).thenReturn(response);
+        router = new Router(routes, factory);
     }
 
     @Test
-    public void convertsRouteNotFoundExceptionToServletException()
-            throws RouteNotFoundException, ServletException, IOException
+    public void executesCorrectAction()
+            throws HttpException, ServletException, IOException
     {
-        when(routes.get(request)).thenThrow(RouteNotFoundException.class);
+        final Action action = mock(Action.class);
+        when(routes.getAction(method, path)).thenReturn(Optional.of(action));
+
+        router.service(servletRequest, servletResponse);
+
+        verify(action).exec(request, response);
+    }
+
+    @Test
+    public void throwServletExceptionIfNoHandlerFound()
+            throws HttpException, ServletException, IOException
+    {
+        final String message = faker.lorem().sentence();
         exception.expect(ServletException.class);
-        exception.expectMessage("Only /bookmarks/ is currently supported.");
-
-        router.doGet(servletRequest, servletResponse);
-    }
-
-    @Test
-    public void routesToIndexBookmarks()
-           throws ServletException, IOException
-    {
-        router.doGet(servletRequest, servletResponse);
-        verify(bookmarksController).index(request, response);
-    }
-
-    @Test
-    public void handlesResponseExceptions()
-            throws ServletException, IOException
-    {
-        final String message = "Error message";
-        doThrow(new ResponseException(message)).when(bookmarksController).index(request, response);
-
-        exception.expect(IOException.class);
         exception.expectMessage(message);
 
-        router.doGet(servletRequest, servletResponse);
+        final Action action = mock(Action.class);
+        doThrow(new HttpException(message)).when(action).exec(request, response);
+        when(routes.getAction(method, path)).thenReturn(Optional.of(action));
+
+        router.service(servletRequest, servletResponse);
     }
 
     @Test
-    public void handleActionMismatchExceptions()
-            throws NoSuchMethodException, ServletException, IOException
+    public void routesToNotFoundIfNoActionFound()
+            throws ServletException, IOException
     {
-        when(resolver.resolve(bookmarksController.getClass(), "index", Request.class, Response.class))
-                .thenThrow(new NoSuchMethodException());
-        exception.expect(ServletException.class);
-        exception.expectMessage("Invalid action for controller.");
+        when(routes.getAction(method, path)).thenReturn(Optional.empty());
 
-        router.doGet(servletRequest, servletResponse);
+        final Handler handler = mock(Handler.class);
+        when(routes.getHandler(NotFoundException.class)).thenReturn(Optional.of(handler));
+
+        router.service(servletRequest, servletResponse);
+
+        final String message = "No route found for " + path;
+        verify(handler).handle(eq(request), eq(response), argThat(e -> e.getMessage().equals(message)));
+    }
+
+    @Test
+    public void routesToHandlerOnException()
+            throws HttpException, ServletException, IOException
+    {
+        final HttpException expected = mock(HttpException.class);
+        final Action action = mock(Action.class);
+        final Handler handler = mock(Handler.class);
+
+        doThrow(expected).when(action).exec(request, response);
+        when(routes.getAction(method, path)).thenReturn(Optional.of(action));
+        when(routes.getHandler(expected.getClass())).thenReturn(Optional.of(handler));
+
+        router.service(servletRequest, servletResponse);
+
+        verify(handler).handle(request, response, expected);
     }
 }

@@ -1,61 +1,42 @@
 package net.slc.jgroph.api.infrastructure.http_server;
 
-import net.slc.jgroph.infrastructure.container.Container;
-
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
-@WebServlet(name = "router", urlPatterns = {"/"}, loadOnStartup = 1)
+@WebServlet(name="router", urlPatterns={"/"}, loadOnStartup=1)
 public class Router extends HttpServlet
 {
-    private static final long serialVersionUID = -838403813674767401L;
+    private static final long serialVersionUID = 3865918382485189944L;
 
-    private final Container container;
     private final Routes routes;
-    private final ActionResolver resolver;
+    private final Factory factory;
 
-    public Router(final Container container, final Routes routes)
+    public Router(final Routes routes, final Factory factory)
     {
-        this.container = container;
         this.routes = routes;
-        this.resolver = this.container.make(ActionResolver.class);
+        this.factory = factory;
     }
 
     @Override
-    protected void doGet(final HttpServletRequest servletRequest, final HttpServletResponse servletResponse)
+    protected void service(final HttpServletRequest servletRequest, final HttpServletResponse servletResponse)
             throws ServletException, IOException
     {
-        final Request request = container.make(Request.class, servletRequest);
-        final Response response = container.make(Response.class, servletResponse);
+        final Request request = factory.createRequest(servletRequest);
+        final Response response = factory.createResponse(servletResponse);
 
         try {
-            final Route route = routes.get(request);
-            executeAction(route, request, response);
-        } catch (RouteNotFoundException e) {
-            throw new ServletException("Only /bookmarks/ is currently supported.", e);
-        }
-    }
-
-    private void executeAction(final Route route, final Request request, final Response response)
-            throws ServletException, IOException
-    {
-        final Object controller = container.make(route.getController());
-        try {
-            final Method action =
-                    resolver.resolve(controller.getClass(), route.getAction(), Request.class, Response.class);
-            action.invoke(controller, request, response);
-        } catch (InvocationTargetException e) {
-            final String originalMessage = e.getCause() == null ? null : e.getCause().getMessage();
-            final String message = originalMessage == null ? "Error executing action." : originalMessage;
-            throw new IOException(message, e);
-        } catch (ReflectiveOperationException e) {
-            throw new ServletException("Invalid action for controller.", e);
+            routes.getAction(request.getMethod(), request.getPath())
+                    .orElseThrow(() -> new NotFoundException("No route found for " + request.getPath()))
+                    .exec(request, response);
+        } catch (HttpException e) {
+            final String message = e.getMessage() == null ? "Unexpected empty exception message" : e.getMessage();
+            routes.getHandler(e.getClass())
+                    .orElseThrow(() -> new ServletException(message))
+                    .handle(request, response, e);
         }
     }
 }
